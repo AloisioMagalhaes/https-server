@@ -1,4 +1,15 @@
 {
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*",
+        "dist",
+        "build",
+        "coverage",
+        "out"
+    ],
     "compilerOptions": {
         "module": "nodenext",
         "moduleResolution": "nodenext",
@@ -42,11 +53,9 @@
         ],
         "baseUrl": ".",
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": [
+                "src/*"
+            ]
         }
-    },
-    "exclude": [
-        "node_modules",
-        "**/node_modules/*"
-    ]
+    }
 }
