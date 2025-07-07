@@ -103,6 +103,11 @@ class StaticHttpServer extends ServerSubject {
         }
     }
     handleRequest(req, res) {
+        if (req.url === "/api/health") {
+            res.writeHead(200, { "Content-Type": "text/plain" });
+            res.end("OK");
+            return;
+        }
         Atomics.add(this.counterArray, 0, 1);
         res.setHeader("X-Requests-Count", Atomics.load(this.counterArray, 0).toString());
         const headerProxy = new Proxy({}, {
@@ -149,14 +154,15 @@ class StaticHttpServer extends ServerSubject {
     }
     start() {
         this.server.on("request", (req, res) => this.handleRequest(req, res));
-        this.server.listen(this.port, () => {
+        this.server.listen({ port: this.port, host: "0.0.0.0" }, () => {
             this.notify({ type: "server-start", timestamp: new Date() });
             console.log(`Server running on https://localhost:${this.port}`);
         });
     }
 }
 exports.StaticHttpServer = StaticHttpServer;
-const server = new StaticHttpServer(443, path_1.default.join(__dirname, "..", "public"));
+const port = parseInt(process.env["PORT"] || "10000", 10);
+const server = new StaticHttpServer(port, path_1.default.join(__dirname, "..", "public"));
 server.attach(new ConsoleLogger());
 server.start();
 //# sourceMappingURL=server.js.map

@@ -34,7 +34,7 @@ class ServerSubject {
   attach(observer: Observer): void {
     this.observers.add(observer);
   }
-/**
+  /**
    * Notifies all attached observers of an event.
    * @param event - The event to broadcast.
    */
@@ -81,7 +81,7 @@ class FileCache {
   private registry = new FinalizationRegistry((filePath: string) => {
     console.log(`File ${filePath} finalized`);
   });
-/**
+  /**
    * Retrieves a cached file buffer.
    * @param filePath - Path to the file.
    * @returns {Uint8Array | undefined} The cached buffer or undefined.
@@ -89,7 +89,7 @@ class FileCache {
   get(filePath: string): Uint8Array | undefined {
     return this.cache.get(filePath)?.deref();
   }
-/**
+  /**
    * Caches a file buffer with WeakRef.
    * @param filePath - Path to the file.
    * @param data - File content as Uint8Array.
@@ -110,7 +110,7 @@ class StaticHttpServer extends ServerSubject {
   private fileCache = new FileCache();
   private requestCounter = new SharedArrayBuffer(4);
   private counterArray = new Uint32Array(this.requestCounter);
-/**
+  /**
    * Initializes the HTTPS server.
    * @param port - Port number to listen on.
    * @param wwwRoot - Root directory for static files.
@@ -122,7 +122,7 @@ class StaticHttpServer extends ServerSubject {
     super();
     this.server = this.createHttpsServer();
   }
-/**
+  /**
    * Creates an HTTPS server with secure TLS options.
    * @returns {https.Server} Configured HTTPS server.
    * @see constants.SSL_OP_NO_TLSv1_2 for secure protocol settings
@@ -136,7 +136,7 @@ class StaticHttpServer extends ServerSubject {
       secureOptions: constants.SSL_OP_NO_TLSv1_2, // Acesse o constante corretamente
     });
   }
-/**
+  /**
    * Generates a self-signed X.509 certificate.
    * @returns {Object} Contains privateKey and certificate PEM strings.
    * @see forge.pki.rsa.generateKeyPair for key generation
@@ -172,7 +172,7 @@ class StaticHttpServer extends ServerSubject {
       certificate: forge.pki.certificateToPem(cert),
     };
   }
-/**
+  /**
    * Streams file content in chunks.
    * @param filePath - Path to the file.
    * @returns {AsyncGenerator<Buffer>} Asynchronous stream of file chunks.
@@ -205,7 +205,7 @@ class StaticHttpServer extends ServerSubject {
       fs.closeSync(fileHandle);
     }
   }
-/**
+  /**
    * Handles incoming HTTP requests.
    * @param req - Incoming HTTP request.
    * @param res - HTTP response stream.
@@ -215,6 +215,11 @@ class StaticHttpServer extends ServerSubject {
     req: import("http").IncomingMessage,
     res: import("http").ServerResponse
   ): void {
+    if (req.url === "/api/health") {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end("OK");
+      return;
+    }
     // Atomic operation for request counter
     Atomics.add(this.counterArray, 0, 1);
     res.setHeader(
@@ -277,19 +282,40 @@ class StaticHttpServer extends ServerSubject {
       }
     }
   }
-/**
+  /**
    * Starts the server and begins listening.
    */
   start(): void {
     this.server.on("request", (req, res) => this.handleRequest(req, res));
-    this.server.listen(this.port, () => {
+    this.server.listen({ port: this.port, host: "0.0.0.0" }, () => {
       this.notify({ type: "server-start", timestamp: new Date() });
       console.log(`Server running on https://localhost:${this.port}`);
     });
   }
 }
-export { StaticHttpServer, ConsoleLogger, FileCache, HSTS_HEADER , ServerSubject};
-export type { ServerEvent, Observer, StaticHttpServer as Server , ConsoleLogger as Logger, FileCache as Cache , HSTS_HEADER as HstsHeader , ServerSubject as Subject, ServerEvent as Event, Observer as ObserverInterface , StaticHttpServer as ServerInterface, ConsoleLogger as LoggerInterface, FileCache as CacheInterface, HSTS_HEADER as HstsHeaderInterface, ServerSubject as SubjectInterface};
+export {
+  StaticHttpServer,
+  ConsoleLogger,
+  FileCache,
+  HSTS_HEADER,
+  ServerSubject,
+};
+export type {
+  ServerEvent,
+  Observer,
+  StaticHttpServer as Server,
+  ConsoleLogger as Logger,
+  FileCache as Cache,
+  HSTS_HEADER as HstsHeader,
+  ServerSubject as Subject,
+  ServerEvent as Event,
+  Observer as ObserverInterface,
+  StaticHttpServer as ServerInterface,
+  ConsoleLogger as LoggerInterface,
+  FileCache as CacheInterface,
+  HSTS_HEADER as HstsHeaderInterface,
+  ServerSubject as SubjectInterface,
+};
 /**
  * Main application entry point.
  * @example
@@ -297,6 +323,8 @@ export type { ServerEvent, Observer, StaticHttpServer as Server , ConsoleLogger 
  * server.attach(new ConsoleLogger());
  * server.start();
  */
-const server = new StaticHttpServer(443, path.join(__dirname, "..", "public"));
+const port = parseInt(process.env["PORT"] || "10000", 10);
+const server = new StaticHttpServer(port, path.join(__dirname, "..", "public"));
+// Attach console logger to server events
 server.attach(new ConsoleLogger());
 server.start();
