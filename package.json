@@ -2,10 +2,10 @@
   "name": "site",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/main.js",
+  "main": "./dist/server.js",
   "scripts": {
-    "build": "npx tsc && npx typedoc --out docs src/main.ts",
-    "start": "node ./dist/main.js"
+    "build": "npx tsc && npx typedoc --out docs src/server.ts",
+    "start": "node ./dist/server.js"
   },
   "keywords": [],
   "author": "",
