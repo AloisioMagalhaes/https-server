@@ -1,16 +1,17 @@
-FROM node:22-alpine
+FROM node:18-alpine
 
-# Define o diretório de trabalho
 WORKDIR /usr/src/app
 
-# Copia package.json e instala dependências
-COPY package*.json ./
+# Instale o TypeScript globalmente
+RUN npm install -g typescript
+
+# Copie dependências e instale
+COPY package*.json tsconfig.json ./
 RUN npm install
 
-# Copia o código-fonte e compila (se necessário)
+# Copie código-fonte e compile
 COPY . .
-RUN npm run build  # Ajuste conforme o script de build do projeto
+RUN npm run build
 
-# Executa o servidor
 EXPOSE 443
-CMD ["node", "dist/server.js"]  # Garanta que o caminho esteja correto
+CMD ["node", "dist/server.js"]
