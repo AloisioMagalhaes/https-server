@@ -4,7 +4,8 @@
   "description": "",
   "main": "./dist/server.js",
   "scripts": {
-    "build": "npx tsc && npx typedoc --out docs src/server.ts",
+    "build": "npx tsc",
+    "docs": "npx typedoc --out docs src/server.ts",
     "start": "node dist/server.js"
   },
   "keywords": [],
